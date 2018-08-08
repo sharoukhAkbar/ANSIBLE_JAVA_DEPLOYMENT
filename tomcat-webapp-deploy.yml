@@ -1,0 +1,29 @@
+---
+
+#Playbook for deploying Java Web Application in a RHEL Server
+- name: Play for Deploying Java-WebApp
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Delete war file from Tomcat webapps folder
+      file: 
+        path: /opt/apache-tomcat-8.5.31/webapps/{{item}}
+        state: absent
+      ignore_errors: yes
+      with_items: 
+        - java-webapp
+        - java-webapp.war
+
+    - name: Download artifacts from Nexus
+      maven_artifact:
+        group_id: net.devops.research
+        artifact_id: java-webapp
+        extension: war
+        repository_url: "{{nexus_url}}"
+        dest: /opt/apache-tomcat-8.5.31/webapps/java-webapp.war
+
+    - name: Start the Tomcat server
+      command: /opt/apache-tomcat-8.5.31/bin/startup.sh
+
+...
